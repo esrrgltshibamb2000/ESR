@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Élection - Département Construction</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
+    h1 { color: #2c3e50; font-size: 2em; }
+    .section { background: white; padding: 20px; margin: 20px 0; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    button { background: #27ae60; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
+    button:hover { background: #219150; }
+    button:disabled { background: gray; cursor: not-allowed; }
+    input[type="email"] { padding: 8px; width: 100%; max-width: 300px; margin-top: 10px; font-size: 1em; }
+    label { font-size: 1em; display: block; margin: 5px 0; }
+  </style>
+</head>
+<body>
+
+  <h1>Élection - Département de la Construction</h1>
+  <p>Veuillez voter pour vos candidats dans les différents services. Un email est requis pour valider le vote (un seul vote par email).</p>
+
+  <!-- Email -->
+  <div class="section">
+    <h2>Votre Email</h2>
+    <input type="email" id="email" placeholder="Entrez votre adresse email" required>
+  </div>
+
+  <!-- Direction de la construction -->
+  <div class="section">
+    <h2>Direction de la Construction</h2>
+    <form id="form-direction">
+      <label><input type="radio" name="direction" value="Joel NDONA"> IR Joel NDONA</label>
+      <label><input type="radio" name="direction" value="Parfait KUKAMBISA"> IR Parfait KUKAMBISA</label>
+      <label><input type="radio" name="direction" value="Enock TOUSSAINT"> IR Enock TOUSSAINT</label>
+    </form>
+  </div>
+
+  <!-- Service études et construction -->
+  <div class="section">
+    <h2>Service Études et Construction</h2>
+    <form id="form-etudes">
+      <label><input type="radio" name="etudes" value="Bibianne BAWOTA"> AR Bibianne BAWOTA</label>
+      <label><input type="radio" name="etudes" value="Tonny ASHEMA"> IR Tonny ASHEMA</label>
+    </form>
+  </div>
+
+  <button id="voteBtn" onclick="envoyerVote()">Soumettre mon vote</button>
+
+  <p id="confirmation" style="color:green; font-weight:bold; margin-top:10px;"></p>
+
+  <p style="margin-top:20px; color:#555; font-size:0.9em;">Après avoir soumis votre vote, vous pouvez voir les résultats en temps réel dans le Google Sheets partagé.</p>
+
+  <script>
+    async function envoyerVote() {
+      let email = document.getElementById("email").value.trim();
+      if (!email) {
+        alert("⚠️ Veuillez entrer votre adresse email pour voter.");
+        return;
+      }
+
+      if (localStorage.getItem("vote_" + email)) {
+        alert("⚠️ Cet email a déjà voté. Un seul vote est autorisé par adresse email.");
+        return;
+      }
+
+      let direction = document.querySelector('input[name="direction"]:checked');
+      let etudes = document.querySelector('input[name="etudes"]:checked');
+
+      if (!direction || !etudes) {
+        alert("⚠️ Veuillez voter pour les deux services avant de valider.");
+        return;
+      }
+
+      let vote = { email: email, direction: direction.value, etudes: etudes.value, date: new Date().toLocaleString() };
+
+      try {
+        await fetch("https://script.google.com/macros/s/TON_WEBHOOK_ID/exec", {
+          method: "POST",
+          body: JSON.stringify(vote),
+          headers: {"Content-Type": "application/json"}
+        });
+
+        document.getElementById("confirmation").innerText = "✅ Merci, votre vote a été enregistré !";
+        localStorage.setItem("vote_" + email, JSON.stringify(vote));
+        document.getElementById("voteBtn").disabled = true;
+      } catch (error) {
+        alert("❌ Erreur lors de l'enregistrement du vote. Veuillez réessayer.");
+        console.error(error);
+      }
+    }
+  </script>
+
+</body>
+</html>
