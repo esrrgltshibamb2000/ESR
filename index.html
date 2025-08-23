@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Élection Département Construction</title>
+<style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+    h1, h2 { text-align: center; color: #333; }
+    .poste { background: #fff; padding: 20px; margin: 20px auto; border-radius: 10px; max-width: 500px; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+    button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+    .vote-btn { background-color: #4CAF50; color: white; }
+    .vote-btn:hover { background-color: #45a049; }
+    #resultats { max-width: 500px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 10px; }
+    #adminPanel { text-align: center; margin-top: 20px; }
+    #adminPanel button { background-color: #f44336; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<h1>Élection Département Construction</h1>
+<h3 style="text-align:center;">Administrateur : Esron Tshibamba (+243834757010)</h3>
+
+<div class="poste">
+  <h2>Directeur de Construction</h2>
+  <button class="vote-btn" onclick="voter('Directeur', 'IR NDONA Joel')">IR NDONA Joel</button>
+  <button class="vote-btn" onclick="voter('Directeur', 'IR KUKAMBISA Parfait')">IR KUKAMBISA Parfait</button>
+  <button class="vote-btn" onclick="voter('Directeur', 'IR TOUSSINT MUSU Enock')">IR TOUSSINT MUSU Enock</button>
+</div>
+
+<div class="poste">
+  <h2>Département Études et Conception</h2>
+  <button class="vote-btn" onclick="voter('Etudes', 'BAYOTA BIBIANNE')">BAYOTA BIBIANNE</button>
+  <button class="vote-btn" onclick="voter('Etudes', 'LOGONDI ACHEMA')">LOGONDI ACHEMA</button>
+  <button class="vote-btn" onclick="voter('Etudes', 'ABDOUL AZIZ')">ABDOUL AZIZ</button>
+</div>
+
+<div class="poste">
+  <h2>Service Exécution et Suivi de Chantier</h2>
+  <button class="vote-btn" onclick="voter('Execution', 'KUKAMBISA Parfait')">KUKAMBISA Parfait</button>
+</div>
+
+<div class="poste">
+  <h2>Service Finances et Administration</h2>
+  <button class="vote-btn" onclick="voter('Finance', 'ABDOUL AZIZ')">ABDOUL AZIZ</button>
+</div>
+
+<div id="resultats">
+  <h2>Résultats en temps réel</h2>
+  <div id="res"></div>
+</div>
+
+<div id="adminPanel">
+  <button onclick="cloturerElection()">Clôturer l'élection et voir résultats finaux</button>
+</div>
+
+<script>
+let votes = {
+  'Directeur': {'IR NDONA Joel': 0, 'IR KUKAMBISA Parfait': 0, 'IR TOUSSINT MUSU Enock': 0},
+  'Etudes': {'BAYOTA BIBIANNE': 0, 'LOGONDI ACHEMA': 0, 'ABDOUL AZIZ': 0},
+  'Execution': {'KUKAMBISA Parfait': 0},
+  'Finance': {'ABDOUL AZIZ': 0}
+};
+
+let electionCloturee = false;
+
+function voter(poste, candidat){
+    if(electionCloturee){
+        alert('L'élection est clôturée. Vous ne pouvez plus voter.');
+        return;
+    }
+    votes[poste][candidat]++;
+    afficherResultats();
+}
+
+function afficherResultats(){
+    let html = '';
+    for (let poste in votes){
+        html += `<h3>${poste}</h3>`;
+        for (let candidat in votes[poste]){
+            html += `${candidat}: ${votes[poste][candidat]} votes<br>`;
+        }
+    }
+    document.getElementById('res').innerHTML = html;
+}
+
+function cloturerElection(){
+    electionCloturee = true;
+    alert('Élection clôturée ! Les résultats finaux sont affichés ci-dessous.');
+    afficherResultats();
+}
+</script>
+
+</body>
+</html>
