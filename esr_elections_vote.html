@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Élections ESR - Département Construction</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f5f5; margin:0; padding:20px; }
+    .container { max-width:650px; margin:auto; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 8px rgba(0,0,0,0.1); }
+    h1 { text-align:center; color:#2c3e50; }
+    h2 { color:#34495e; margin-top:30px; }
+    .candidate { margin:10px 0; }
+    label { display:block; margin:5px 0; cursor:pointer; }
+    input[type="text"] { width:100%; padding:10px; margin:10px 0; border-radius:6px; border:1px solid #ccc; }
+    button { margin-top:20px; padding:12px; width:100%; background:#2980b9; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer; }
+    button:hover { background:#1f5f87; }
+    .result { margin-top:20px; padding:10px; background:#ecf0f1; border-radius:8px; }
+    .bar { height:20px; background:#3498db; border-radius:5px; }
+    .bar-container { background:#bdc3c7; border-radius:5px; margin:5px 0; }
+    .error { color:red; font-weight:bold; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🗳️ Élections ESR</h1>
+    <p><strong>Département Construction</strong><br>Choisissez vos représentants :</p>
+
+    <form id="voteForm">
+      <label><strong>Nom / Téléphone :</strong>
+        <input type="text" id="voterId" placeholder="Entrez votre nom ou numéro" required>
+      </label>
+
+      <h2>Directeur de Construction</h2>
+      <div class="candidate">
+        <label><input type="radio" name="directeur" value="Ir Joël Ndona" required> Ir Joël Ndona</label>
+        <label><input type="radio" name="directeur" value="Ir Parfait Kukambisa"> Ir Parfait Kukambisa</label>
+        <label><input type="radio" name="directeur" value="Ir Enock Toussaint"> Ir Enock Toussaint</label>
+      </div>
+
+      <h2>Service Étude et Conception</h2>
+      <div class="candidate">
+        <label><input type="radio" name="service" value="Ir Tonny Achema" required> Ir Tonny Achema</label>
+        <label><input type="radio" name="service" value="Ar Bibiane Bawota"> Ar Bibiane Bawota</label>
+      </div>
+
+      <button type="submit">Voter ✅</button>
+      <div id="error" class="error" style="display:none;"></div>
+    </form>
+
+    <div id="result" class="result" style="display:none;"></div>
+  </div>
+
+  <script>
+    const votes = {
+      directeur: {"Ir Joël Ndona":0, "Ir Parfait Kukambisa":0, "Ir Enock Toussaint":0},
+      service: {"Ir Tonny Achema":0, "Ar Bibiane Bawota":0}
+    };
+
+    let totalVotes = {directeur:0, service:0};
+    let voters = new Set(); // stocker les votants déjà inscrits
+
+    function renderResults(){
+      let html = "<h3>Résultats actuels 🏆</h3>";
+
+      html += "<h4>Directeur de Construction</h4>";
+      for(let c in votes.directeur){
+        let percent = totalVotes.directeur ? Math.round((votes.directeur[c]/totalVotes.directeur)*100) : 0;
+        html += `<p>${c}: ${votes.directeur[c]} votes (${percent}%)</p>`;
+        html += `<div class='bar-container'><div class='bar' style='width:${percent}%;'></div></div>`;
+      }
+
+      html += "<h4>Service Étude et Conception</h4>";
+      for(let c in votes.service){
+        let percent = totalVotes.service ? Math.round((votes.service[c]/totalVotes.service)*100) : 0;
+        html += `<p>${c}: ${votes.service[c]} votes (${percent}%)</p>`;
+        html += `<div class='bar-container'><div class='bar' style='width:${percent}%;'></div></div>`;
+      }
+
+      document.getElementById("result").innerHTML = html;
+    }
+
+    document.getElementById("voteForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const voterId = document.getElementById("voterId").value.trim();
+      const errorDiv = document.getElementById("error");
+
+      if(voters.has(voterId)){
+        errorDiv.style.display = "block";
+        errorDiv.innerText = "❌ Vous avez déjà voté !";
+        return;
+      }
+
+      const directeur = document.querySelector('input[name="directeur"]:checked').value;
+      const service = document.querySelector('input[name="service"]:checked').value;
+
+      // Enregistrer le vote
+      voters.add(voterId);
+      votes.directeur[directeur]++;
+      votes.service[service]++;
+      totalVotes.directeur++;
+      totalVotes.service++;
+
+      errorDiv.style.display = "none";
+      document.getElementById("result").style.display = "block";
+      renderResults();
+    });
+  </script>
+</body>
+</html>
