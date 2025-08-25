@@ -1,95 +1,169 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Élection - Département Construction</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
-    h1 { color: #2c3e50; font-size: 2em; }
-    .section { background: white; padding: 20px; margin: 20px 0; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-    button { background: #27ae60; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
-    button:hover { background: #219150; }
-    button:disabled { background: gray; cursor: not-allowed; }
-    input[type="email"] { padding: 8px; width: 100%; max-width: 300px; margin-top: 10px; font-size: 1em; }
-    label { font-size: 1em; display: block; margin: 5px 0; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Élections ESR 2025</title>
+<style>
+body { font-family: Arial, sans-serif; background-color: #f2f2f2; margin: 0; padding: 0; }
+.container { max-width: 700px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
+h1, h2 { text-align: center; color: #333; }
+label { display: block; margin-top: 15px; font-weight: bold; }
+select, input[type="text"], input[type="email"] { width: 100%; padding: 10px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc; }
+button { margin-top: 20px; width: 100%; padding: 12px; background-color: #007BFF; color: #fff; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+button:hover { background-color: #0056b3; }
+.message { text-align: center; margin-top: 20px; font-size: 18px; color: green; }
+#sondage { margin-top: 30px; background: #f9f9f9; padding: 20px; border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+th { background-color: #007BFF; color: white; }
+.department-header { background-color: #0056b3; color: white; font-weight: bold; }
+</style>
 </head>
 <body>
+<div class="container">
+<h1>Élections ESR 2025</h1>
+<p>Chaque électeur peut voter <strong>une seule fois</strong>. Limite totale de votes : <span id="voteLimit">10</span>.</p>
 
-  <h1>Élection - Département de la Construction</h1>
-  <p>Veuillez voter pour vos candidats dans les différents services. Un email est requis pour valider le vote (un seul vote par email).</p>
+<form id="voteForm">
+    <label for="electeur">Nom complet :</label>
+    <input type="text" id="electeur" name="electeur" required>
 
-  <!-- Email -->
-  <div class="section">
-    <h2>Votre Email</h2>
-    <input type="email" id="email" placeholder="Entrez votre adresse email" required>
-  </div>
+    <label for="email">Email ou Matricule :</label>
+    <input type="email" id="email" name="email" required>
 
-  <!-- Direction de la construction -->
-  <div class="section">
-    <h2>Direction de la Construction</h2>
-    <form id="form-direction">
-      <label><input type="radio" name="direction" value="Joel NDONA"> IR Joel NDONA</label>
-      <label><input type="radio" name="direction" value="Parfait KUKAMBISA"> IR Parfait KUKAMBISA</label>
-      <label><input type="radio" name="direction" value="Enock TOUSSAINT"> IR Enock TOUSSAINT</label>
-    </form>
-  </div>
+    <label for="departement">Sélectionnez le département / Directeur :</label>
+    <select id="departement" name="departement" required>
+        <option value="">--Choisissez--</option>
+        <option value="construction">Directeur de Construction</option>
+        <option value="etude_conception">Service Étude & Conception</option>
+    </select>
 
-  <!-- Service études et construction -->
-  <div class="section">
-    <h2>Service Études et Construction</h2>
-    <form id="form-etudes">
-      <label><input type="radio" name="etudes" value="Bibianne BAWOTA"> AR Bibianne BAWOTA</label>
-      <label><input type="radio" name="etudes" value="Tonny ASHEMA"> IR Tonny ASHEMA</label>
-    </form>
-  </div>
+    <div id="candidatsContainer"></div>
 
-  <button id="voteBtn" onclick="envoyerVote()">Soumettre mon vote</button>
+    <button type="submit">Valider mon vote</button>
+</form>
 
-  <p id="confirmation" style="color:green; font-weight:bold; margin-top:10px;"></p>
+<div class="message" id="message"></div>
 
-  <p style="margin-top:20px; color:#555; font-size:0.9em;">Après avoir soumis votre vote, vous pouvez voir les résultats en temps réel dans le Google Sheets partagé.</p>
+<div id="sondage">
+    <h2>Résultats en direct</h2>
+    <p>Nombre total d'électeurs : <span id="totalElecteurs">0</span></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Candidat</th>
+                <th>Votes</th>
+            </tr>
+        </thead>
+        <tbody id="resultatsTable"></tbody>
+    </table>
+</div>
+</div>
 
-  <script>
-    async function envoyerVote() {
-      let email = document.getElementById("email").value.trim();
-      if (!email) {
-        alert("⚠️ Veuillez entrer votre adresse email pour voter.");
-        return;
-      }
+<script>
+const candidats = {
+    construction: ["Ir Joël Ndona", "Ir Parfait Kukambisa", "Ir Enock Toussaint"],
+    etude_conception: ["Ir Tonny Achema", "Ar Bibiane Bawota"]
+};
 
-      if (localStorage.getItem("vote_" + email)) {
-        alert("⚠️ Cet email a déjà voté. Un seul vote est autorisé par adresse email.");
-        return;
-      }
+const voteLimit = 10; // Limite totale de votes
+let voteCounts = {};
+for (let dept in candidats) {
+    candidats[dept].forEach(c => voteCounts[c] = 0);
+}
 
-      let direction = document.querySelector('input[name="direction"]:checked');
-      let etudes = document.querySelector('input[name="etudes"]:checked');
+const departementSelect = document.getElementById("departement");
+const candidatsContainer = document.getElementById("candidatsContainer");
+const voteForm = document.getElementById("voteForm");
+const messageDiv = document.getElementById("message");
+const totalElecteursSpan = document.getElementById("totalElecteurs");
+const resultatsTable = document.getElementById("resultatsTable");
 
-      if (!direction || !etudes) {
-        alert("⚠️ Veuillez voter pour les deux services avant de valider.");
-        return;
-      }
+function updateSondage() {
+    let totalVotes = Object.keys(localStorage).length;
+    if(totalVotes > voteLimit) totalVotes = voteLimit;
+    totalElecteursSpan.textContent = totalVotes;
+    resultatsTable.innerHTML = '';
 
-      let vote = { email: email, direction: direction.value, etudes: etudes.value, date: new Date().toLocaleString() };
+    for (let dept in candidats) {
+        const deptRow = document.createElement('tr');
+        const deptCell = document.createElement('td');
+        deptCell.textContent = dept === 'construction' ? 'Département Construction' : 'Service Étude & Conception';
+        deptCell.colSpan = 2;
+        deptCell.className = 'department-header';
+        deptRow.appendChild(deptCell);
+        resultatsTable.appendChild(deptRow);
 
-      try {
-        await fetch("https://script.google.com/macros/s/TON_WEBHOOK_ID/exec", {
-          method: "POST",
-          body: JSON.stringify(vote),
-          headers: {"Content-Type": "application/json"}
+        candidats[dept].forEach(candidat => {
+            const row = document.createElement('tr');
+            const nameCell = document.createElement('td');
+            nameCell.textContent = candidat;
+            const voteCell = document.createElement('td');
+            voteCell.textContent = voteCounts[candidat];
+            row.appendChild(nameCell);
+            row.appendChild(voteCell);
+            resultatsTable.appendChild(row);
         });
-
-        document.getElementById("confirmation").innerText = "✅ Merci, votre vote a été enregistré !";
-        localStorage.setItem("vote_" + email, JSON.stringify(vote));
-        document.getElementById("voteBtn").disabled = true;
-      } catch (error) {
-        alert("❌ Erreur lors de l'enregistrement du vote. Veuillez réessayer.");
-        console.error(error);
-      }
     }
-  </script>
+}
 
+departementSelect.addEventListener("change", function() {
+    const dept = this.value;
+    candidatsContainer.innerHTML = "";
+    if(dept) {
+        candidats[dept].forEach((candidat, index) => {
+            const radio = document.createElement("input");
+            radio.type = "radio";
+            radio.name = "candidat";
+            radio.value = candidat;
+            radio.id = "candidat" + index;
+            radio.required = true;
+
+            const label = document.createElement("label");
+            label.htmlFor = "candidat" + index;
+            label.textContent = candidat;
+
+            candidatsContainer.appendChild(radio);
+            candidatsContainer.appendChild(label);
+        });
+    }
+});
+
+voteForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    if(Object.keys(localStorage).length >= voteLimit) {
+        messageDiv.textContent = "La limite de votes a été atteinte.";
+        messageDiv.style.color = "red";
+        return;
+    }
+    if(localStorage.getItem(email)) {
+        messageDiv.textContent = "Vous avez déjà voté avec cet email/matricule !";
+        messageDiv.style.color = "red";
+        return;
+    }
+
+    const formData = new FormData(voteForm);
+    const voteData = {
+        nom: formData.get("electeur"),
+        email: formData.get("email"),
+        departement: formData.get("departement"),
+        candidat: formData.get("candidat")
+    };
+
+    localStorage.setItem(email, JSON.stringify(voteData));
+    voteCounts[voteData.candidat] += 1;
+
+    messageDiv.textContent = "Merci pour votre participation ! Votre vote a été enregistré.";
+    messageDiv.style.color = "green";
+    voteForm.reset();
+    candidatsContainer.innerHTML = "";
+    updateSondage();
+});
+
+updateSondage();
+</script>
 </body>
 </html>
